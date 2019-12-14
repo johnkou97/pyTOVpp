@@ -1,23 +1,23 @@
 
 # coding: utf-8
 
-# 
+#
 # **TOV Stars with Piecewise Polytropic equation of state**
-# 
+#
 # N. Stergioulas
-# 
+#
 # Aristotle University of Thessaloniki
-# 
+#
 # v1.0 (June 2018)
-# 
-# ###### Content provided under a Creative Commons Attribution license, 
-# [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/); 
-# code under [GNU GPLv3 License](https://choosealicense.com/licenses/gpl-3.0/). 
+#
+# ###### Content provided under a Creative Commons Attribution license,
+# [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/);
+# code under [GNU GPLv3 License](https://choosealicense.com/licenses/gpl-3.0/).
 # (c)2018 [Nikolaos Stergioulas](http://www.astro.auth.gr/~niksterg/)
-# 
+#
 
 #
-# Input: log10(p1[CGS])  Gamma1  Gamma2  Gamma3  rho_c[g/cm^3] 
+# Input: log10(p1[CGS])  Gamma1  Gamma2  Gamma3  rho_c[g/cm^3]
 #
 # Output: rho_c/c^2[g/cm^3], eps_c[g/cm^3], Mass[Msun], M0[Msun], Radius[km], N_gridpoints
 #
@@ -58,7 +58,7 @@ def stdout_redirected(to=os.devnull, stdout=None):
     stdout_fd = fileno(stdout)
     # copy stdout_fd before it is overwritten
     #NOTE: `copied` is inheritable on Windows when duplicating a standard stream
-    with os.fdopen(os.dup(stdout_fd), 'wb') as copied: 
+    with os.fdopen(os.dup(stdout_fd), 'wb') as copied:
         stdout.flush()  # flush library buffers that dup2 knows nothing about
         try:
             os.dup2(fileno(to), stdout_fd)  # $ exec >&to
@@ -89,20 +89,28 @@ Density = Msun/Length**3
 import argparse
 
 parser = argparse.ArgumentParser(description='TOV solution for Piecewise Polytropic EOS')
-parser.add_argument('p1', type=float, default=34.669,
-                    help='p1')
-parser.add_argument('Gamma1', type=float, default=2.909,
-                    help='Gamma1')
-parser.add_argument('Gamma2', type=float, default=2.246,
-                    help='Gamma2')
-parser.add_argument('Gamma3', type=float, default=2.144,
-                    help='Gamma3')
+#parser.add_argument('p1', type=float, default=34.669,
+#                    help='p1')
+#parser.add_argument('Gamma1', type=float, default=2.909,
+#                    help='Gamma1')
+#parser.add_argument('Gamma2', type=float, default=2.246,
+#                    help='Gamma2')
+#parser.add_argument('Gamma3', type=float, default=2.144,
+#                    help='Gamma3')
 parser.add_argument('rho_c', type=float, default=1e15,
                     help='central density')
 
 args = parser.parse_args()
 
+#args.p1=34.669
+#args.Gamma1=2.909
+#args.Gamma2=2.246
+#args.Gamma3=2.144
+#args.rho_c=8.95e14
+
+
 rho_c = args.rho_c/Density
+#rho_c=8.95e14/Density
 
 # ## Define the equation of state
 
@@ -115,16 +123,16 @@ rho2 = pow(10,15.0)/Density
 # Set $p_1, \Gamma_1, \Gamma_2, \Gamma_3$ for EOS
 
 #SLy
-#p1 = pow(10.0,34.384)/Density/c**2
-#Gamma1 = 3.005
-#Gamma2 = 2.988
-#Gamma3 = 2.851
+p1 = pow(10.0,34.384)/Density/c**2
+Gamma1 = 3.005
+Gamma2 = 2.988
+Gamma3 = 2.851
 
 #H4
-p1 = pow(10.0,args.p1)/Density/c**2
-Gamma1 = args.Gamma1
-Gamma2 = args.Gamma2
-Gamma3 = args.Gamma3
+#p1 = pow(10.0,args.p1)/Density/c**2
+#Gamma1 = args.Gamma1
+#Gamma2 = args.Gamma2
+#Gamma3 = args.Gamma3
 
 
 # Find $K_1, K_2, K_3$
@@ -147,9 +155,9 @@ GammaL_3 = 1.28733
 GammaL_4 = 1.58425
 
 KL_1 = 3.99874e-8 * pow(Msun/Length**3, GammaL_1-1)  # notice a missing c^2 in Ki values in Table II of Read et al. 2009
-KL_2 = 5.32697e+1 * pow(Msun/Length**3, GammaL_2-1) 
-KL_3 = 1.06186e-6 * pow(Msun/Length**3, GammaL_3-1)  
-KL_4 = 6.80110e-9 * pow(Msun/Length**3, GammaL_4-1)  
+KL_2 = 5.32697e+1 * pow(Msun/Length**3, GammaL_2-1)
+KL_3 = 1.06186e-6 * pow(Msun/Length**3, GammaL_3-1)
+KL_4 = 6.80110e-9 * pow(Msun/Length**3, GammaL_4-1)
 
 epsL_4 = 0.0
 alphaL_4 = 0.0
@@ -232,7 +240,7 @@ def eps_of_rho(rho, args2):
         return (1.0+alpha3)*rho + K3/(Gamma3-1.0)*pow(rho,Gamma3)
 
 def eps_of_P(p, args2):
-    rhoL_3,rhoL_2,rhoL_1,rho0,rho1,rho2,KL_4,KL_3,KL_2,KL_1,K1,K2,K3,    GammaL_4,GammaL_3,GammaL_2,GammaL_1,Gamma1,Gamma2,Gamma3,    pL_3,pL_2, pL_1, p0, p1, p2,    alphaL_4, alphaL_3, alphaL_2, alphaL_1, alpha1, alpha2, alpha3 = args2    
+    rhoL_3,rhoL_2,rhoL_1,rho0,rho1,rho2,KL_4,KL_3,KL_2,KL_1,K1,K2,K3,    GammaL_4,GammaL_3,GammaL_2,GammaL_1,Gamma1,Gamma2,Gamma3,    pL_3,pL_2, pL_1, p0, p1, p2,    alphaL_4, alphaL_3, alphaL_2, alphaL_1, alpha1, alpha2, alpha3 = args2
     if p<pL_3:
         return (1.0+alphaL_4)*pow(p/KL_4, 1.0/GammaL_4)+ p/(GammaL_4-1)
     elif pL_3<= p <pL_2:
@@ -264,7 +272,7 @@ plt.ylim(20, 40)
 plt.xlabel(r'$ \log_{10} (\rho \ {\rm in \ g/cm^3} )$')
 plt.ylabel(r'$ \log_{10} (P \ {\rm in \ dyne/cm^2} )$')
 plt.plot(logrhopointsCGS, logPpointsCGS)
-xcoords = [np.log10(rhoL_4*Density), np.log10(rhoL_3*Density), np.log10(rhoL_2*Density), 
+xcoords = [np.log10(rhoL_4*Density), np.log10(rhoL_3*Density), np.log10(rhoL_2*Density),
           np.log10(rhoL_1*Density), np.log10(rho0*Density), np.log10(rho1*Density), np.log10(rho2*Density)]
 for xc in xcoords:
     plt.axvline(x=xc, color='black')
@@ -280,14 +288,14 @@ P_c = P_of_rho(rho_c, args)
 
 def f(r, y, args2):
     rhoL_3,rhoL_2,rhoL_1,rho0,rho1,rho2,KL_4,KL_3,KL_2,KL_1,K1,K2,K3,GammaL_4,GammaL_3,GammaL_2,GammaL_1,Gamma1,Gamma2,Gamma3,pL_3,pL_2, pL_1, p0, p1, p2,alphaL_4, alphaL_3, alphaL_2, alphaL_1, alpha1, alpha2, alpha3 = args2
-    
-    eps = eps_of_P(y[0], args2) 
-    
-    return [ -( eps + y[0] )*( y[1] + 4.0*np.pi*pow(r,3.0)*y[0] )/( r*(r-2.0*y[1]) ), 
-            
+
+    eps = eps_of_P(y[0], args2)
+
+    return [ -( eps + y[0] )*( y[1] + 4.0*np.pi*pow(r,3.0)*y[0] )/( r*(r-2.0*y[1]) ),
+
              4*np.pi*pow(r,2.0)*eps,
-            
-             2.0*( y[1] + 4.0*np.pi*pow(r,3.0)*y[0] )/( r*(r-2.0*y[1]) ) 
+
+             2.0*( y[1] + 4.0*np.pi*pow(r,3.0)*y[0] )/( r*(r-2.0*y[1]) )
            ]
 
 
@@ -341,7 +349,7 @@ with stdout_redirected(): # suppress warnings
         idx += 1
 
 # last grid point with positive pressure
-idxlast = idx-1 
+idxlast = idx-1
 
 # radius at last positive pressure grid point
 R_last = r[idxlast]
@@ -398,9 +406,9 @@ Mass = Mass_last + Dmass_simps
 
 # Construct table with main solution variables:
 
-values = np.zeros((idxlast+1, 10)) 
+values = np.zeros((idxlast+1, 10))
 
-for i in range(0,idxlast+1): 
+for i in range(0,idxlast+1):
     values[i][0] = r[i]
     values[i][1] = rho_of_P(y[i][0], args) # rho
     values[i][2] = eps_of_P(y[i][0], args2) # epsilon
@@ -409,18 +417,18 @@ for i in range(0,idxlast+1):
     values[i][5] = y[i][2]   # nu (arbitrary)
 
 values[0][6] = 0.0
-for i in range(1,idxlast+1):     
+for i in range(1,idxlast+1):
     values[i][6] = - np.log(1.0-2.0*y[i][1]/r[i])   # lambda
-    
+
 values[:, 7] = (values[:, 2] + values[:, 3])/values[:, 1]  # h
 
 values[:, 8] = - (values[:, 4] + 4.0*np.pi*pow(values[:, 0], 3.0)*values[:, 3])/ ( values[:, 0]*(values[:, 0] - 2.0*values[:, 4]))
                     # (e+P)^{-1} dP/dr directly from rhs of TOV eqn
-        
-values[0][8] = 0.0   # fix value at the center 
+
+values[0][8] = 0.0   # fix value at the center
 
 for i in range(0,idxlast+1):
-    rho = values[i][1] 
+    rho = values[i][1]
     if rho<rhoL_3:
         values[i][9] = GammaL_4
     elif rhoL_3<= rho <rhoL_2:
@@ -457,9 +465,9 @@ rint = np.zeros(idxlast+1)
 m0int = np.zeros(idxlast+1)
 mint_alt = np.zeros(idxlast+1)
 
-# fill radius array and integrands 
+# fill radius array and integrands
 
-for i in range(0,idxlast+1): 
+for i in range(0,idxlast+1):
     rint[i] = values[i][0]
     m0int[i] = 4.0*np.pi*pow(rint[i],2.0)*np.exp(values[i][6]/2.0)*values[i][1]
     mint_alt[i] = 4.0*np.pi*pow(rint[i],2.0)*np.exp((values[i][5]+values[i][6])/2.0)*(values[i][2]+3.0*values[i][3])
@@ -483,13 +491,13 @@ M_reldiff = (Mass-M_alt)/Mass
 
 N_gridpoints = idxlast+1
 
-# SCREEN OUTPUT 
+# SCREEN OUTPUT
 
 print("%5.4e %5.4e %12.11f %12.11f %12.11g %d" % (rho_c*Density, eps_c*Density, Mass, M0, Radius*Length/1e5, N_gridpoints))
 
 # Convert to CGS
 
-values_CGS = np.zeros((idxlast+1, 10)) 
+values_CGS = np.zeros((idxlast+1, 10))
 
 values_CGS[:, 0] = values[:, 0] * Length
 values_CGS[:, 1] = values[:, 1] * Density  # rho
@@ -507,5 +515,3 @@ values_CGS[:, 9] = values[:, 9]         # Gamma
 
 np.savetxt('TOV_output.dat', values)
 np.savetxt('TOV_output_CGS.dat', values_CGS)
-
-
