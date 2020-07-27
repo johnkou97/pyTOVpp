@@ -60,10 +60,6 @@ Time = Length/c
 Density = Msun/Length**3
 
 
-param=np.load('eos.npy')
-name_eos=np.load('name_eos.npy')
-
-
 import argparse
 
 parser = argparse.ArgumentParser(description='TOV solution for Piecewise Polytropic EOS')
@@ -77,47 +73,46 @@ args = parser.parse_args()
 nmb=args.nmb
 
 
-name=name_eos[nmb]
-p1=param[nmb][0]
-Gamma1=param[nmb][1]
-Gamma2=param[nmb][2]
-Gamma3=param[nmb][3]
-rho_c=param[nmb][4]/Density
+#name=name_eos[nmb]
+#p1=param[nmb][0]
 
-print(rho_c)
-
-rho1 = pow(10,14.7)/Density
-rho2 = pow(10,15.0)/Density
-
-#name='SLy'
-#p1 = pow(10.0,34.384)/Density/c**2
-#Gamma1 = 3.005
-#Gamma2 = 2.988
-#Gamma3 = 2.851
-
-#name='H4'
-#p1 = pow(10.0,34.669)/Density/c**2
-#Gamma1 = 2.909
-#Gamma2 = 2.246
-#Gamma3 = 2.144
-
+#rho_c=param[nmb][4]/Density
+rho_c=5.8e14/Density
+#print(rho_c)
+if nmb==1:
+    den=9.3108e13/Density
+    name='15H'
+    rho_c=1.2e14/Density
+elif nmb==2:
+    den=1.0711e14/Density
+    name='125H'
+    rho_c=1.4e14/Density
+elif nmb==3:
+    den=1.2323e14/Density
+    name='H'
+    rho_c=1.7e14/Density
+elif nmb==4:
+    den=1.4177e14/Density
+    name='HB'
+    rho_c=1.9e14/Density
+elif nmb==5:
+    den=1.6309e14/Density
+    name='B'
+    rho_c=2.3e14/Density
 
 
 
 #rho_c=3.00e14/Density
-step=1.20e13/Density
+step=2.0e13/Density
 
 
-m_r=np.zeros((2,250))
-k_l=np.zeros((2,250))
+m_r=np.zeros((2,200))
+k_l=np.zeros((2,200))
 
-for j in range(250):
+for j in range(200):
 
-    # Find $K_1, K_2, K_3$
-
-    K1 = p1 / pow(rho1,Gamma1)
-    K2 = K1 * pow( rho1, Gamma1-Gamma2)
-    K3 = K2 * pow( rho2, Gamma2-Gamma3)
+    rho1 = pow(10,17.0)/Density
+    rho2 = pow(10,18.0)/Density
 
 
     # Low-density part (PP approximation to low-density SLy EOS in [Read et al 2009](https://ui.adsabs.harvard.edu/#abs/2009PhRvD..79l4033R/abstract))
@@ -127,15 +122,28 @@ for j in range(250):
     rhoL_3 = 2.44034e7/Density
     rhoL_4 = 0.0
 
-    GammaL_1 = 1.35692
-    GammaL_2 = 0.62223
-    GammaL_3 = 1.28733
-    GammaL_4 = 1.58425
+    GammaL_1 = 1.3562395
+    GammaL_2 = 1.3562395
+    GammaL_3 = 1.3562395
+    GammaL_4 = 1.3562395
 
-    KL_1 = 3.99874e-8 * pow(Msun/Length**3, GammaL_1-1)  # notice a missing c^2 in Ki values in Table II of Read et al. 2009
-    KL_2 = 5.32697e+1 * pow(Msun/Length**3, GammaL_2-1)
-    KL_3 = 1.06186e-6 * pow(Msun/Length**3, GammaL_3-1)
-    KL_4 = 6.80110e-9 * pow(Msun/Length**3, GammaL_4-1)
+
+
+    Gamma1=3
+    Gamma2=3
+    Gamma3=3
+
+    KL_1 = 3.594e13*pow(Density,GammaL_1-1)/c**2
+    KL_2=KL_1
+    KL_3=KL_1
+    KL_4=KL_1
+
+
+    p0 = KL_1*(den)**GammaL_1
+
+    K1 = p0 / pow(den,Gamma1)
+    K2=K1
+    K3=K1
 
     epsL_4 = 0.0
     alphaL_4 = 0.0
@@ -196,6 +204,7 @@ for j in range(250):
     pL_2 = KL_2*pow(rhoL_2,GammaL_2)
     pL_1 = KL_1*pow(rhoL_1,GammaL_1)
     p0 = KL_1*pow(rho0,GammaL_1)
+    p1 = K1*pow(rho1,Gamma1)
     p2 = K2*pow(rho2,Gamma2)
     args2 = (rhoL_3,rhoL_2,rhoL_1,rho0,rho1,rho2,KL_4,KL_3,KL_2,KL_1,K1,K2,K3,GammaL_4,GammaL_3,GammaL_2,GammaL_1,Gamma1,Gamma2,Gamma3,pL_3,pL_2, pL_1, p0, p1, p2, alphaL_4, alphaL_3, alphaL_2, alphaL_1, alpha1, alpha2, alpha3)
 
@@ -269,16 +278,16 @@ for j in range(250):
         logPpointsCGS[i] = np.log10(Density*c**2*P_of_rho( pow(10.0,logrhopoints[i]), args))
 
 
-    plt.xlim(logrhopointsCGS[0], logrhopointsCGS[eospoints-1])
-    plt.ylim(20, 40)
-    plt.xlabel(r'$ \log_{10} (\rho \ {\rm in \ g/cm^3} )$')
-    plt.ylabel(r'$ \log_{10} (P \ {\rm in \ dyne/cm^2} )$')
-    plt.plot(logrhopointsCGS, logPpointsCGS)
-    xcoords = [np.log10(rhoL_4*Density), np.log10(rhoL_3*Density), np.log10(rhoL_2*Density),
-              np.log10(rhoL_1*Density), np.log10(rho0*Density), np.log10(rho1*Density), np.log10(rho2*Density)]
-    for xc in xcoords:
-        plt.axvline(x=xc, color='black')
-
+    #plt.xlim(logrhopointsCGS[0], logrhopointsCGS[eospoints-1])
+    #plt.ylim(20, 40)
+    #plt.xlabel(r'$ \log_{10} (\rho \ {\rm in \ g/cm^3} )$')
+    #plt.ylabel(r'$ \log_{10} (P \ {\rm in \ dyne/cm^2} )$')
+    #plt.plot(logrhopointsCGS, logPpointsCGS)
+    #xcoords = [np.log10(rhoL_4*Density), np.log10(rhoL_3*Density), np.log10(rhoL_2*Density),
+    #          np.log10(rhoL_1*Density), np.log10(rho0*Density), np.log10(rho1*Density), np.log10(rho2*Density)]
+    #for xc in xcoords:
+    #    plt.axvline(x=xc, color='black')
+    #plt.show()
 
     # ## Find the central energy density and pressure
 
@@ -543,6 +552,11 @@ for j in range(250):
 
 
 
-
+#plt.scatter(m_r[1],m_r[0])
+#plt.show()
+if os.path.exists('results'):
+    pass
+else:
+    os.mkdir('results')
 np.save('/home/jannis/Documents/pyTOVpp/results/'+name,m_r)
 np.save('/home/jannis/Documents/pyTOVpp/results/k_l_'+name,k_l)
